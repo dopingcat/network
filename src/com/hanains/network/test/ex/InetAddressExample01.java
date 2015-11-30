@@ -20,6 +20,8 @@ public class InetAddressExample01 {
 			System.out.println();
 			
 			System.out.println(Integer.toHexString(inetAddress.hashCode()));
+			
+			System.out.println(InetAddress.getByName("www.naver.com"));
 		} catch (UnknownHostException e) {
 			e.printStackTrace();
 		}
