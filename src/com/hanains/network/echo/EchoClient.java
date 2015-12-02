@@ -1,8 +1,9 @@
 package com.hanains.network.echo;
 
+import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
+import java.io.InputStreamReader;
+import java.io.PrintWriter;
 import java.net.InetSocketAddress;
 import java.net.Socket;
 import java.util.Scanner;
@@ -14,49 +15,46 @@ public class EchoClient {
 	public static void main(String[] args) {
 		Scanner scanner = new Scanner(System.in);
 		Socket socket = null;
-		InputStream inputStream = null;
-		OutputStream outputStream = null;
+		BufferedReader bufferdReader = null;
+		PrintWriter printWriter = null;
 		
-		int readByteCount;
-		byte[] buffer = new byte[256];
-
 		try {
 			socket = new Socket();
 
 			socket.connect(new InetSocketAddress(SERVER_IP, SERVER_PORT));
 			System.out.println("[CLIENT] connected");
 
-			inputStream = socket.getInputStream();
-			outputStream = socket.getOutputStream();
+			bufferdReader = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+			printWriter = new PrintWriter(socket.getOutputStream());
 
 			while (true) {
 				System.out.print("> ");
 				String input = scanner.nextLine();
 				
-				if(input == null || input.length() == 0) {
+				if(input == null || input.equals("")) {
 					System.err.println("[CLIENT] input data");
 				} else if(input.equals("exit")) {
 					break;
 				}
 				
 				// write
-				outputStream.write(input.getBytes("UTF-8"));
+				printWriter.print(input);
+				printWriter.flush();
 				
 				// read
-				readByteCount = inputStream.read(buffer);
-				String recieveData = new String(buffer, 0, readByteCount, "UTF-8");
+				String recieveData = bufferdReader.readLine();
 				System.out.println("[CLIENT] received : " + recieveData);
 			}
 		} catch (IOException ioe) {
 			System.err.println("[CLIENT] error : " + ioe.toString());
 		} finally {
 			try {
-				if (outputStream != null) {
-					outputStream.close();
+				if (printWriter != null) {
+					printWriter.close();
 				}
 
-				if (inputStream != null) {
-					inputStream.close();
+				if (bufferdReader != null) {
+					bufferdReader.close();
 				}
 
 				if (socket != null && !socket.isClosed()) {
