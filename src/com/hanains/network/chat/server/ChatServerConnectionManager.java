@@ -38,7 +38,7 @@ public class ChatServerConnectionManager {
 		System.out.println("===============================================================================");
 	}
 	
-	public void addConnection(ChatConnection chatConnection) {
+	public void addConnection(ChatConnection chatConnection) throws IOException {
 		connectionPool.put(chatConnection.getName(), chatConnection);
 		joinRoom("lobby", chatConnection.getName());
 	}
@@ -77,18 +77,20 @@ public class ChatServerConnectionManager {
 		roomInfo.put(roomName, new LinkedList<String>());
 	}
 	
-	public void joinRoom(String roomName, String userName) {
+	public void joinRoom(String roomName, String userName) throws IOException {
 		if(!roomInfo.containsKey(roomName)) {
 			createRoom(roomName);
 		}
 		roomInfo.get(connectionPool.get(userName).getLocale()).remove(userName); // 로비에서 삭제
+		ChatServerUtil.getChatUtil().roomcast(roomName, (userName + "님이 입장하셨습니다."));
 		roomInfo.get(roomName).add(userName);	// 참여방에 추가
 		connectionPool.get(userName).setLocale(roomName);	// 장소 변경
 	}
 	
-	public void exitRoom(String roomName, String userName) {
+	public void exitRoom(String roomName, String userName) throws IOException {
 		if(roomInfo.containsKey(roomName)) {
 			roomInfo.get(connectionPool.get(userName).getLocale()).remove(userName);	// 참여방에서 삭제
+			ChatServerUtil.getChatUtil().roomcast(roomName, (userName + "님이 퇴장하셨습니다."));
 			roomInfo.get("lobby").add(userName);	// 로비에 추가
 			connectionPool.get(userName).setLocale("lobby");	// 장소 변경
 			

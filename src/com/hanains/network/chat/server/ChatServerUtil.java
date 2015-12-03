@@ -6,7 +6,7 @@ import java.util.List;
 import com.hanains.network.chat.model.ChatConnection;
 
 public class ChatServerUtil {
-	private static final ChatServerUtil chatUtil = new ChatServerUtil();
+	private final static ChatServerUtil chatUtil = new ChatServerUtil();
 	
 	private ChatServerUtil() {
 	}

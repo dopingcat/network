@@ -35,24 +35,28 @@ public class ChatServerRegistThread extends Thread {
 			
 			// regist loop
 			while(true) {
-				printWriter.println("input your name : ");
+				// 닉네임 등록을 요청
+				printWriter.println("[Input your name]");
+				// 닉네임 수신
 				String name = bufferedReader.readLine();
-				
+				// 닉네임 등록 처리
 				if(name == null) {
-					System.out.println("[Chat Server ver 0.0] Dissconnected by Client [" + socket.getRemoteSocketAddress() + "]");
+					System.out.println("[Chat Server ver 0.1] Dissconnected by Client [" + socket.getRemoteSocketAddress() + "]");
 					break;
 				} else if(ChatServerConnectionManager.getChatServerConnectionManager().isNameExist(name)) {
-					printWriter.println("err/This name already exist. retry.");
+					printWriter.println("This name already exist. retry.");
 				} else {
 					chatConnection = new ChatConnection(name, socket, "lobby");	// 기본 접속 위치 = lobby
+					// 등록 완료
 					ChatServerConnectionManager.getChatServerConnectionManager().addConnection(chatConnection);
-					System.out.println("[RegistThread] connection add complete");	
+					// 접속 확인 메세지 전송
+					printWriter.println("ok " + chatConnection.getName() + " " + chatConnection.getLocale());
+					// 채팅 스레드 시작
 					new ChatServerChatThread(chatConnection).start();
 					break;
 				}
 				bufferedReader = null;
 				printWriter = null;
-				
 			}
 		} catch (IOException ioe) {
 			System.err.println("[RegistThread] error : " + ioe.toString());

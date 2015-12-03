@@ -18,7 +18,7 @@ public class ChatServerConnectionThread implements Runnable {
 			String localhost = inetAddress.getHostAddress();
 			serverSocket.bind(new InetSocketAddress(localhost, PORT));
 			
-			System.out.println("[Chat Server ver 0.0] Binding " + localhost + " : " + PORT);
+			System.out.println("[Chat Server ver 0.1] Binding " + localhost + " : " + PORT);
 			while (true) {
 				new ChatServerRegistThread(serverSocket.accept()).start();
 			}
