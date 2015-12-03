@@ -68,6 +68,12 @@ public class ChatServerChatThread extends Thread {
 							chatConnection.getPrintWriter().println(str);
 						}
 						chatConnection.getPrintWriter().println("===============================================================");
+					} else if(cmd[0].equalsIgnoreCase("/exit")) {
+						if(chatConnection.getLocale().equalsIgnoreCase("lobby")) {	// 로비일 경우 종료
+							chatConnection.getSocket().close();
+						} else {
+							ChatServerConnectionManager.getChatServerConnectionManager().exitRoom(chatConnection.getLocale(), chatConnection.getName());
+						}
 					} else {
 						chatConnection.getPrintWriter().println("[Error] Unknown command");
 					}
