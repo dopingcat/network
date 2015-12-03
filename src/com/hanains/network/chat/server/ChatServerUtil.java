@@ -60,11 +60,11 @@ public class ChatServerUtil {
 	}
 	
 	public void exit(ChatConnection chatConnection) throws IOException {
-		if(chatConnection.getLocale().equalsIgnoreCase("lobby")) {	// 로비일 경우 종료
-			chatConnection.getSocket().close();
-		} else {
+		if(!chatConnection.getLocale().equalsIgnoreCase("lobby")) {	// 로비아닐 경우
 			ChatServerConnectionManager.getChatServerConnectionManager().exitRoom(chatConnection.getLocale(), chatConnection.getName());
 			chatConnection.getPrintWriter().println("[lobby]로 나왔습니다.");
+		} else {
+			chatConnection.getPrintWriter().println("이미 [lobby] 입니다.");
 		}
 	}
 }

@@ -96,6 +96,7 @@ public class ChatServerConnectionManager {
 			
 			// 빈방 삭제
 			if(!roomName.equalsIgnoreCase("lobby") && roomInfo.get(roomName).isEmpty()) {
+				System.err.println("remove " + roomName);
 				roomInfo.remove(roomName);
 			}
 		}
