@@ -47,13 +47,13 @@ public class ChatServerChatThread extends Thread {
 					String[] command = input.split(" ", 3);	// 0=명령 1=인자 or 메세지
 					
 					if(command[0].equalsIgnoreCase("/w")) {
-						ChatUtil.getChatUtil().whisper(chatConnection, command);
+						ChatServerUtil.getChatUtil().whisper(chatConnection, command);
 					} else if(command[0].equalsIgnoreCase("/j")) {
-						ChatUtil.getChatUtil().joinRoom(chatConnection, command);
+						ChatServerUtil.getChatUtil().joinRoom(chatConnection, command);
 					} else if(command[0].equalsIgnoreCase("/ls")) {
-						ChatUtil.getChatUtil().displayRoomList(chatConnection);
+						ChatServerUtil.getChatUtil().displayRoomList(chatConnection);
 					} else if(command[0].equalsIgnoreCase("/exit")) {
-						ChatUtil.getChatUtil().exit(chatConnection);
+						ChatServerUtil.getChatUtil().exit(chatConnection);
 					} else {
 						chatConnection.getPrintWriter().println("[Error] Unknown command");
 					}
