@@ -1,7 +1,6 @@
 package com.hanains.network.chat.server;
 
 import java.io.IOException;
-import java.util.List;
 
 import com.hanains.network.chat.model.ChatConnection;
 
@@ -45,35 +44,16 @@ public class ChatServerChatThread extends Thread {
 				
 				// '/'로 시작하는 경우는 명령어 취급
 				if(input.charAt(0)=='/') {
-					String[] cmd = input.split(" ", 3);	// 0=명령 1=인자 or 메세지
+					String[] command = input.split(" ", 3);	// 0=명령 1=인자 or 메세지
 					
-					if(cmd[0].equalsIgnoreCase("/w")) {	// 귓속말 fomat = {/w [userName] msg}
-						if(cmd.length < 3) {
-							chatConnection.getPrintWriter().println("인자값이 부족합니다.");
-						} else {
-							ChatServerConnectionManager.getChatServerConnectionManager().selectConnection(cmd[1]).getPrintWriter()
-								.println("'" + chatConnection.getName() + "'님의 귓속말 : " + cmd[2]);
-						}
-					} else if(cmd[0].equalsIgnoreCase("/j")) {	// 방 개설 및 참여 fomat = {/c [roomName]}
-						if(cmd.length < 2) {
-							chatConnection.getPrintWriter().println("인자값이 부족합니다.");
-						} else {
-							ChatServerConnectionManager.getChatServerConnectionManager().joinRoom(cmd[1], chatConnection.getName());
-							chatConnection.getPrintWriter().println("[" + cmd[1] + "] 방에 참여하였습니다.");
-						}
-					} else if(cmd[0].equalsIgnoreCase("/ls")) {	// 전체 방 정보 보기 format {/ls}
-						List<String> list = ChatServerConnectionManager.getChatServerConnectionManager().getAllRoomInfo();
-						chatConnection.getPrintWriter().println("======================== Current Rooms ========================");
-						for(String str : list) {
-							chatConnection.getPrintWriter().println(str);
-						}
-						chatConnection.getPrintWriter().println("===============================================================");
-					} else if(cmd[0].equalsIgnoreCase("/exit")) {
-						if(chatConnection.getLocale().equalsIgnoreCase("lobby")) {	// 로비일 경우 종료
-							chatConnection.getSocket().close();
-						} else {
-							ChatServerConnectionManager.getChatServerConnectionManager().exitRoom(chatConnection.getLocale(), chatConnection.getName());
-						}
+					if(command[0].equalsIgnoreCase("/w")) {
+						ChatUtil.getChatUtil().whisper(chatConnection, command);
+					} else if(command[0].equalsIgnoreCase("/j")) {
+						ChatUtil.getChatUtil().joinRoom(chatConnection, command);
+					} else if(command[0].equalsIgnoreCase("/ls")) {
+						ChatUtil.getChatUtil().displayRoomList(chatConnection);
+					} else if(command[0].equalsIgnoreCase("/exit")) {
+						ChatUtil.getChatUtil().exit(chatConnection);
 					} else {
 						chatConnection.getPrintWriter().println("[Error] Unknown command");
 					}
