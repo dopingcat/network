@@ -27,7 +27,7 @@ public class ChatServerRegistThread extends Thread {
 		InetSocketAddress inetSocketAddress = (InetSocketAddress)socket.getRemoteSocketAddress();
 		String remoteHostAddress = inetSocketAddress.getAddress().getHostAddress();
 		int remoteHostPort = inetSocketAddress.getPort();
-		System.out.println("[Chat Server ver 0.0] connected from " + remoteHostAddress + ":" + remoteHostPort);
+		System.out.println("[Chat Server ver 0.1] connected from " + remoteHostAddress + ":" + remoteHostPort);
 		
 		try {
 			BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(socket.getInputStream()));
@@ -37,16 +37,16 @@ public class ChatServerRegistThread extends Thread {
 			while(true) {
 				printWriter.println("input your name : ");
 				String name = bufferedReader.readLine();
+				
 				if(name == null) {
 					System.out.println("[Chat Server ver 0.0] Dissconnected by Client [" + socket.getRemoteSocketAddress() + "]");
 					break;
 				} else if(ChatServerConnectionManager.getChatServerConnectionManager().isNameExist(name)) {
 					printWriter.println("err/This name already exist. retry.");
 				} else {
-					// Q. 소켓을 넘기는것이 괜찮은 방법인지...? 괜찮다고 하면 자원 관리는 어떻게 하는지..
 					chatConnection = new ChatConnection(name, socket, "lobby");	// 기본 접속 위치 = lobby
 					ChatServerConnectionManager.getChatServerConnectionManager().addConnection(chatConnection);
-					System.out.println("[RegistThread] connection add complete");
+					System.out.println("[RegistThread] connection add complete");	
 					new ChatServerChatThread(chatConnection).start();
 					break;
 				}

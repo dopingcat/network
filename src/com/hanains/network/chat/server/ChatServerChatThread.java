@@ -1,17 +1,13 @@
 package com.hanains.network.chat.server;
 
 import java.io.IOException;
-import java.io.OutputStreamWriter;
-import java.io.PrintWriter;
-import java.net.Socket;
-import java.nio.charset.StandardCharsets;
+import java.util.List;
 
 import com.hanains.network.chat.model.ChatConnection;
 
 public class ChatServerChatThread extends Thread {
 	private ChatConnection chatConnection = null;
 	// 사용자 입력 메세지는 Base64로 인코딩
-	// 귓속말
 	public ChatServerChatThread() {}
 	
 	public ChatServerChatThread(ChatConnection chatConnection) {
@@ -20,13 +16,16 @@ public class ChatServerChatThread extends Thread {
 		}
 	}
 	
-	public void broadcast(String msg) throws IOException {
-		PrintWriter printWriter = null;
-		for(Socket socket : ChatServerConnectionManager.getChatServerConnectionManager().getAllConnections()) {
-			printWriter = new PrintWriter(new OutputStreamWriter(socket.getOutputStream(), StandardCharsets.UTF_8), true);
-			printWriter.println(msg);
+	public void roomcast(String msg) throws IOException {
+		for(ChatConnection chatConnection : ChatServerConnectionManager.getChatServerConnectionManager().getCurrentConnections(chatConnection.getLocale())) {
+			chatConnection.getPrintWriter().println(msg);
 		}
-		printWriter = null;
+	}
+	
+	public void broadcast(String msg) throws IOException {
+		for(ChatConnection chatConnection : ChatServerConnectionManager.getChatServerConnectionManager().getAllConnections()) {
+			chatConnection.getPrintWriter().println(msg);
+		}
 	}
 	
 	@Override
@@ -48,14 +47,32 @@ public class ChatServerChatThread extends Thread {
 				if(input.charAt(0)=='/') {
 					String[] cmd = input.split(" ", 3);	// 0=명령 1=인자 or 메세지
 					
-					if(cmd[0].equals("/w")) {	// 귓속말 fomat = {/w [userName] msg} 
-						ChatServerConnectionManager.getChatServerConnectionManager().selectConnection(cmd[1]).getPrintWriter()
-							.println("'" + chatConnection.getName() + "'님의 귓속말 : " + cmd[2]);
+					if(cmd[0].equalsIgnoreCase("/w")) {	// 귓속말 fomat = {/w [userName] msg}
+						if(cmd.length < 3) {
+							chatConnection.getPrintWriter().println("인자값이 부족합니다.");
+						} else {
+							ChatServerConnectionManager.getChatServerConnectionManager().selectConnection(cmd[1]).getPrintWriter()
+								.println("'" + chatConnection.getName() + "'님의 귓속말 : " + cmd[2]);
+						}
+					} else if(cmd[0].equalsIgnoreCase("/j")) {	// 방 개설 및 참여 fomat = {/c [roomName]}
+						if(cmd.length < 2) {
+							chatConnection.getPrintWriter().println("인자값이 부족합니다.");
+						} else {
+							ChatServerConnectionManager.getChatServerConnectionManager().joinRoom(cmd[1], chatConnection.getName());
+							chatConnection.getPrintWriter().println("[" + cmd[1] + "] 방에 참여하였습니다.");
+						}
+					} else if(cmd[0].equalsIgnoreCase("/ls")) {	// 전체 방 정보 보기 format {/ls}
+						List<String> list = ChatServerConnectionManager.getChatServerConnectionManager().getAllRoomInfo();
+						chatConnection.getPrintWriter().println("======================== Current Rooms ========================");
+						for(String str : list) {
+							chatConnection.getPrintWriter().println(str);
+						}
+						chatConnection.getPrintWriter().println("===============================================================");
 					} else {
 						chatConnection.getPrintWriter().println("[Error] Unknown command");
 					}
 				} else {
-					broadcast(chatConnection.getName() + " : " + input);
+					roomcast(chatConnection.getName() + " : " + input);
 				}
 			}
 		} catch (IOException ioe) {

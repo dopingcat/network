@@ -1,7 +1,6 @@
 package com.hanains.network.chat.server;
 
 import java.io.IOException;
-import java.net.Socket;
 import java.util.ArrayList;
 import java.util.Hashtable;
 import java.util.LinkedList;
@@ -12,14 +11,17 @@ import com.hanains.network.chat.model.ChatConnection;
 public class ChatServerConnectionManager {
 	private final static ChatServerConnectionManager connectionManager = new ChatServerConnectionManager();
 	private final static Hashtable<String, ChatConnection> connectionPool = new Hashtable<>();
-	private final static Hashtable<String, List<String>> roomInfo = new Hashtable<>();
+	private final static Hashtable<String, LinkedList<String>> roomInfo = new Hashtable<>();
 	
 	private ChatServerConnectionManager() {
-		roomInfo.put("lobby", new LinkedList<>());
 	}
 	
 	public static ChatServerConnectionManager getChatServerConnectionManager() {
 		return connectionManager;
+	}
+	
+	public void init() {
+		roomInfo.put("lobby", new LinkedList<String>());
 	}
 	
 	public boolean isNameExist(String name) {
@@ -38,7 +40,7 @@ public class ChatServerConnectionManager {
 	
 	public void addConnection(ChatConnection chatConnection) {
 		connectionPool.put(chatConnection.getName(), chatConnection);
-		roomInfo.get("lobby").add(chatConnection.getName());
+		joinRoom("lobby", chatConnection.getName());
 	}
 	
 	public void removeConnection(String name) throws IOException {
@@ -50,21 +52,57 @@ public class ChatServerConnectionManager {
 		}
 	}
 	
-	public ChatConnection selectConnection(String name) throws NullPointerException {
+	public ChatConnection selectConnection(String name) {
 		return connectionPool.get(name);
 	}
 	
-	public List<Socket> getAllConnections() {
-		ArrayList<Socket> list = new ArrayList<>();
-		connectionPool.forEach((k, v) -> list.add(v.getSocket()));
+	public List<ChatConnection> getCurrentConnections(String roomName) {
+		ArrayList<ChatConnection> list = new ArrayList<>();
+		
+		for(String str : roomInfo.get(roomName)) {
+			list.add(connectionPool.get(str));
+		}
 		
 		return list;
 	}
 	
-	public boolean createRoom(String roomName) {
-		if(roomInfo.containsKey(roomName)) {
-			return false;
+	public List<ChatConnection> getAllConnections() {
+		ArrayList<ChatConnection> list = new ArrayList<>();
+		connectionPool.forEach((k, v) -> list.add(v));
+		
+		return list;
+	}
+	
+	public void createRoom(String roomName) {
+		roomInfo.put(roomName, new LinkedList<String>());
+	}
+	
+	public void joinRoom(String roomName, String userName) {
+		if(!roomInfo.containsKey(roomName)) {
+			createRoom(roomName);
 		}
-		return true;
+		roomInfo.get(connectionPool.get(userName).getLocale()).remove(userName); // 로비에서 삭제
+		roomInfo.get(roomName).add(userName);	// 참여방에 추가
+		connectionPool.get(userName).setLocale(roomName);	// 장소 변경
+	}
+	
+	public void exitRoom(String roomName, String userName) {
+		if(roomInfo.containsKey(roomName)) {
+			roomInfo.get(connectionPool.get(userName).getLocale()).remove(userName);	// 참여방에서 삭제
+			roomInfo.get("lobby").add(userName);	// 로비에 추가
+			connectionPool.get(userName).setLocale("lobby");	// 장소 변경
+			
+			// 빈방 삭제
+			if(!roomName.equalsIgnoreCase("lobby") && roomInfo.get(roomName).isEmpty()) {
+				roomInfo.remove(roomName);
+			}
+		}
+	}
+	
+	public List<String> getAllRoomInfo() {
+		List<String> list = new ArrayList<>();
+		roomInfo.forEach((k, v) -> list.add(k + "\t|\t" + v.size() + "명 참여중"));
+		
+		return list;
 	}
 }
