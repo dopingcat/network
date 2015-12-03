@@ -52,12 +52,12 @@ public class ChatServerRegistThread extends Thread {
 					// 접속 확인 메세지 전송
 					printWriter.println("ok " + chatConnection.getName() + " " + chatConnection.getLocale());
 					// 채팅 스레드 시작
-					new ChatServerChatThread(chatConnection).start();
+					new ChatServerReceiveThread(chatConnection).start();
 					break;
 				}
-				bufferedReader = null;
-				printWriter = null;
 			}
+			bufferedReader = null;
+			printWriter = null;
 		} catch (IOException ioe) {
 			System.err.println("[RegistThread] error : " + ioe.toString());
 			
